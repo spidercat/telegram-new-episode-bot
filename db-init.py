@@ -2,12 +2,19 @@ from tinydb import TinyDB, Query, where
 
 db = TinyDB('tinydb/db.json')
 
-db.insert({'whoami': {'Maxim': 'Ты отец.', 'Ola': 'Мать ты.', 'Nitay': 'You are nagging, little monster. Also known as Nitay.', 'Ido': 'You\'re esteemed guest of Grabarnik family bot.'}})
-# db.insert({'name': 'Maxim', 'chat_id': '898147660'})
-# db.insert({'name': 'Ola', 'chat_id': '930059357'})
-# db.insert({'name': 'Nitay', 'chat_id': '802580898'})
-# db.insert({'name': 'Idan', 'chat_id': '1142897890'})
-# db.insert({'name': 'Naama', 'chat_id': '1171727092'})
+groups = db.table('groups')
+config = db.table('config')
+
+q = config.search(Query().token.exists())[0]
+print(q)
+exit()
+
+groups.insert({'whoami': {'Maxim': 'Ты отец.', 'Ola': 'Мать ты.', 'Nitay': 'You are nagging, little monster. Also known as Nitay.', 'Ido': 'You\'re esteemed guest of Grabarnik family bot.'}})
+groups.insert({'name': 'Maxim', 'chat_id': '898147660'})
+groups.insert({'name': 'Ola', 'chat_id': '930059357'})
+groups.insert({'name': 'Nitay', 'chat_id': '802580898'})
+groups.insert({'name': 'Idan', 'chat_id': '1142897890'})
+groups.insert({'name': 'Naama', 'chat_id': '1171727092'})
 
 # db.insert({'name': 'Family', 'members': ['898147660', '930059357', '1142897890', '1142897890', '1171727092']})
 # db.insert({'name': 'Admins', 'members': ['898147660', '930059357']})
@@ -24,8 +31,8 @@ db.insert({'whoami': {'Maxim': 'Ты отец.', 'Ola': 'Мать ты.', 'Nitay
 # table.insert({'name': 'Idan', 'chat_id': '1142897890'})
 # table.insert({'name': 'Naama', 'chat_id': '1171727092'})
 
-# admins = db.table('admins')
-# admins.insert()
+config.insert({'token': "123456789"})
+
 
 # username: None
 # first_name: Maxim

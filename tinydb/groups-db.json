@@ -44,6 +44,25 @@
                 "1142897890",
                 "1171727092"
             ]
+        },
+        "101": {
+            "name": "Ido",
+            "chat_id": "41216287"
+        },
+        "102": {
+            "name": "Guests",
+            "members": [
+                "41216287"
+            ]
+        },
+        "103": {
+            "name": "whoami",
+            "whoami": {
+                "Maxim": "Ты отец.",
+                "Ola": "Мать ты.",
+                "Nitay": "You are a nagging, little monster also known as Nitay.",
+                "Ido": "Ido, you're an esteemed guest of Grabarnik family bot."
+            }
         }
     }
 }

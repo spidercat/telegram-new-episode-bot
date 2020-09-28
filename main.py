@@ -189,11 +189,22 @@ def cancel(bot: telegram.bot.Bot):
 
     pending_episode = {}
 
+def whoami(bot: telegram.bot.Bot, update: telegram.update.Update):
+    chat_id = update.message.chat.id
+    if not db.is_family(chat_id) and not db.is_guest(chat_id):
+        handle_unsupported_user(bot, update)
+        return
+
+    me = db.whoami(chat_id)
+    print(f"{chat_id}  /whoami:  {me}")
+    update.message.reply_text(me)
+
 dispatcher.add_handler(CommandHandler('start', start))
 dispatcher.add_handler(CommandHandler('shows', shows))
 dispatcher.add_handler(CommandHandler('please', please, pass_args=True))
 dispatcher.add_handler(CommandHandler('aye', aye))
 dispatcher.add_handler(CommandHandler('nay', nay))
+dispatcher.add_handler(CommandHandler('whoami', whoami))
 dispatcher.add_handler(MessageHandler(Filters.all, message, edited_updates=True))
 
 updater.start_polling()

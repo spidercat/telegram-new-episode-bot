@@ -1,6 +1,6 @@
 import config
 from db import Db
-from pendingShows import get_shows
+from pendingShows import get_shows, get_next_episode_number, prepare_next_episode
 
 import os
 import telegram
@@ -121,6 +121,30 @@ def please(bot: telegram.bot.Bot, update: telegram.update.Update, args):
 def is_quorum():
     return not db.get_quorum(pending_episode['aye'])
 
+def copy_episode(bot: telegram.bot.Bot):
+    global pending_episode
+    global last_copied_episode
+
+    show = pending_episode['show']
+    episode_number = get_next_episode_number(show)
+
+    for i in pending_episode['aye']:
+        bot.send_message(i, f"Start copying new episode of '{show}': {' '.join(episode_number)}")
+
+    error = prepare_next_episode(show)
+
+    if not error:
+        message = "Copy is complete"
+        last_copied_episode = datetime.now()
+    else:
+        message = f"Copy failed with the following error: {error}"
+
+    for i in pending_episode['aye']:
+        bot.send_message(i, message)
+
+    pending_episode = {}
+
+
 def aye(bot: telegram.bot.Bot, update: telegram.update.Update):
     chat_id = update.message.chat.id
     if not db.is_family(chat_id):
@@ -128,7 +152,6 @@ def aye(bot: telegram.bot.Bot, update: telegram.update.Update):
         return
 
     global pending_episode
-    global last_copied_episode
 
     if not pending_episode:
         update.message.reply_text(f"Hold your horses. There are no pending requests.")
@@ -142,17 +165,7 @@ def aye(bot: telegram.bot.Bot, update: telegram.update.Update):
     pending_episode['aye'].append(str(chat_id))
 
     if is_quorum():
-        for i in pending_episode['aye']:
-            # TODO: make better message
-            bot.send_message(i, f"Start copying new episode of {pending_episode['show']}")
-
-        time.sleep(2)
-        for i in pending_episode['aye']:
-            # TODO: make better message
-            bot.send_message(i, f"Copy is complete")
-
-        last_copied_episode = datetime.now()
-        pending_episode = {}
+        copy_episode(bot)
     else:
         for i in db.get_quorum([chat_id]):
             # TODO: make better message

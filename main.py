@@ -5,18 +5,23 @@ from pendingShows import get_shows, get_next_episode_number, prepare_next_episod
 import os
 import telegram
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, time, timedelta
 from telegram.ext import Updater
 from telegram.ext import CommandHandler, Filters, MessageHandler, RegexHandler
 from telegram.ext import CallbackQueryHandler
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, KeyboardButton, ReplyKeyboardMarkup, ReplyKeyboardRemove
-import time
 from collections import OrderedDict
 from threading import Timer
 
 updater = Updater(config.TOKEN)
 dispatcher = updater.dispatcher
 db = Db()
+
+workday_start = time(7,0)
+workday_end = time(20,0)
+def is_working_hours():
+    now = datetime.now().time()
+    return now >= workday_start and now <= workday_end
 
 cool_down_interval = 30
 
@@ -82,6 +87,10 @@ def please(bot: telegram.bot.Bot, update: telegram.update.Update, args):
     chat_id = update.message.chat.id
     if not db.is_family(chat_id):
         handle_unsupported_user(bot, update)
+        return
+
+    if not is_working_hours():
+        bot.send_message(chat_id, f"Leave me alone. I don't handle requests outside of working hours ({workday_start.strftime('%H:%M')} - {workday_end.strftime('%H:%M')}).")
         return
 
     remove_keyboard = ReplyKeyboardRemove()

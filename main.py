@@ -25,11 +25,14 @@ def is_working_hours():
 
 cool_down_interval = 15
 
-pending_request_timeout = 60.0
+pending_request_timeout = 150.0
+
+daily_limit = 3
 
 timeout_timer = Timer(2.0, lambda: print('hi'))
 
-last_copied_episode = datetime.now() - timedelta(minutes=cool_down_interval)
+copied_today_count = 0
+last_copied_episode = datetime.now() - timedelta(days=7) # just a date in a not so recent past
 pending_episode = {}
 
 def handle_unsupported_user(bot: telegram.bot.Bot, update: telegram.update.Update):
@@ -100,6 +103,8 @@ def please(bot: telegram.bot.Bot, update: telegram.update.Update, args):
     global cool_down_interval
     global pending_request_timeout
     global timeout_timer
+    global daily_limit
+    global copied_today_count
 
     show = ' '.join(args)
     if show not in get_shows():
@@ -107,11 +112,24 @@ def please(bot: telegram.bot.Bot, update: telegram.update.Update, args):
         return 
 
     if last_copied_episode + timedelta(minutes=cool_down_interval) > datetime.now():
-        bot.send_message(chat_id, f"Only {(datetime.now() - last_copied_episode).seconds//60} minutes passed since last time", reply_markup=remove_keyboard)        
+        bot.send_message(chat_id, f"Patience, my friend. Only {(datetime.now() - last_copied_episode).seconds//60} minutes passed since last time", reply_markup=remove_keyboard)        
         return
 
     if pending_episode:
         bot.send_message(chat_id, f"First finish with {pending_episode['name']}'s request for {pending_episode['show']}", reply_markup=remove_keyboard)
+        return
+
+    now = datetime.now()
+    today_work_start = datetime(now.year, now.month, now.day, workday_start.hour, workday_start.minute)
+    if last_copied_episode < today_work_start:
+        print(f"now: {now}")
+        print(f"today_work_start: {today_work_start}")
+        print(f"last_copied_episode: {last_copied_episode}")
+
+        copied_today_count = 0
+
+    if copied_today_count >= daily_limit:
+        bot.send_message(chat_id, f"You had {daily_limit} new episodes today already. Go do some pushups instead ;-)", reply_markup=remove_keyboard)
         return
 
     timeout_timer = Timer(pending_request_timeout, lambda: cancel(bot))
@@ -128,11 +146,13 @@ def please(bot: telegram.bot.Bot, update: telegram.update.Update, args):
     bot.send_message(chat_id, f"I'll ask them about '{show}'", reply_markup=remove_keyboard)
 
 def is_quorum():
+    global pending_episode
     return not db.get_quorum(pending_episode['aye'])
 
 def copy_episode(bot: telegram.bot.Bot):
     global pending_episode
     global last_copied_episode
+    global copied_today_count
 
     show = pending_episode['show']
     episode_number = get_next_episode_number(show)
@@ -143,7 +163,8 @@ def copy_episode(bot: telegram.bot.Bot):
     error = prepare_next_episode(show)
 
     if not error:
-        message = "Copy is complete"
+        copied_today_count = copied_today_count + 1
+        message = f"Copy #{copied_today_count} is complete"
         last_copied_episode = datetime.now()
     else:
         message = f"Copy failed with the following error: {error}"
@@ -174,6 +195,8 @@ def aye(bot: telegram.bot.Bot, update: telegram.update.Update):
     pending_episode['aye'].append(str(chat_id))
 
     if is_quorum():
+        global timeout_timer
+        timeout_timer.cancel()
         copy_episode(bot)
     else:
         for i in db.get_quorum([chat_id]):

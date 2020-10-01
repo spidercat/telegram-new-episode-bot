@@ -194,14 +194,15 @@ def aye(bot: telegram.bot.Bot, update: telegram.update.Update):
     # notify
     pending_episode['aye'].append(str(chat_id))
 
+    for i in db.get_quorum([chat_id]):
+        # TODO: make better message
+        bot.send_message(i, f"{db.get_name(chat_id)} says: Aye, Aye Captain!!")
+    
     if is_quorum():
+        bot.send_chat_action(chat_id=chat_id, action=telegram.ChatAction.TYPING)
         global timeout_timer
         timeout_timer.cancel()
         copy_episode(bot)
-    else:
-        for i in db.get_quorum([chat_id]):
-            # TODO: make better message
-            bot.send_message(i, f"{db.get_name(chat_id)} says: Aye, Aye Captain!!")
 
 def nay(bot: telegram.bot.Bot, update: telegram.update.Update):
     chat_id = update.message.chat.id

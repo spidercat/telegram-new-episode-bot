@@ -1,0 +1,47 @@
+{
+    "_default": {
+        "1": {
+            "whoami": {
+                "Maxim": "Ты отец.",
+                "Ola": "Мать ты.",
+                "Nitay": "You are a nagging, little monster also known as Nitay.",
+                "Ido": "You're an esteemed guest of Grabarnik family bot."
+            }
+        }
+    },
+    "groups": {
+        "1": {
+            "whoami": {
+                "Maxim": "Ты отец.",
+                "Ola": "Мать ты.",
+                "Nitay": "You are nagging, little monster. Also known as Nitay.",
+                "Ido": "You're esteemed guest of Grabarnik family bot."
+            }
+        },
+        "2": {
+            "name": "Maxim",
+            "chat_id": "898147660"
+        },
+        "3": {
+            "name": "Ola",
+            "chat_id": "930059357"
+        },
+        "4": {
+            "name": "Nitay",
+            "chat_id": "802580898"
+        },
+        "5": {
+            "name": "Idan",
+            "chat_id": "1142897890"
+        },
+        "6": {
+            "name": "Naama",
+            "chat_id": "1171727092"
+        }
+    },
+    "config": {
+        "1": {
+            "token": "123456789"
+        }
+    }
+}

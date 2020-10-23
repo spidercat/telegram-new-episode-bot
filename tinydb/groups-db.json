@@ -50,18 +50,30 @@
             "chat_id": "41216287"
         },
         "102": {
-            "name": "Guests",
-            "members": [
-                "41216287"
-            ]
+            "name": "Ori",
+            "chat_id": "759518523"
         },
         "103": {
+            "name": "Hagai",
+            "chat_id": "66038625"
+        },
+        "112": {
+            "name": "Guests",
+            "members": [
+                "41216287",
+                "759518523",
+                "66038625"
+            ]
+        },
+        "113": {
             "name": "whoami",
             "whoami": {
                 "Maxim": "Ты отец.",
                 "Ola": "Мать ты.",
                 "Nitay": "You are a nagging, little monster also known as Nitay.",
-                "Ido": "Ido, you're an esteemed guest of Grabarnik family bot."
+                "Ido": "Ido, you're an esteemed guest of Grabarnik family bot.",
+                "Ori": "Ori the Hush Hash, you're an esteemed guest of Grabarnik family bot.",
+                "Hagai": "Hagai, you're a friend and an esteemed colleague."
             }
         }
     }

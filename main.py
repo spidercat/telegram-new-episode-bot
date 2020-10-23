@@ -5,7 +5,7 @@ from pendingShows import get_shows, get_next_episode_number, prepare_next_episod
 import os
 import telegram
 import logging
-from datetime import datetime, time, timedelta
+from datetime import datetime, time, timedelta, date
 from telegram.ext import Updater
 from telegram.ext import CommandHandler, Filters, MessageHandler, RegexHandler
 from telegram.ext import CallbackQueryHandler
@@ -23,11 +23,15 @@ def is_working_hours():
     now = datetime.now().time()
     return now >= workday_start and now <= workday_end
 
-cool_down_interval = 15
+cool_down_interval = 30
 
 pending_request_timeout = 150.0
 
-daily_limit = 3
+def daily_limit():
+    if date.today().isoweekday() in range(5,6):
+        return 4
+    else:
+        return 3
 
 timeout_timer = Timer(2.0, lambda: print('hi'))
 
@@ -43,7 +47,7 @@ def handle_unsupported_user(bot: telegram.bot.Bot, update: telegram.update.Updat
     print(f'chat id : {chat_id}')
     bot.send_chat_action(chat_id=chat_id, action=telegram.ChatAction.TYPING)
     time.sleep(2)
-    update.message.reply_text("Я обслуживаю только очень узкий круг ограниченных людей. Вы не из их числа.")
+    bot.send_message(chat_id, "Я обслуживаю только очень узкий круг ограниченных людей. Вы не из их числа.")
 
 def start(bot: telegram.bot.Bot, update: telegram.update.Update):
     chat_id = update.message.chat.id
@@ -103,7 +107,6 @@ def please(bot: telegram.bot.Bot, update: telegram.update.Update, args):
     global cool_down_interval
     global pending_request_timeout
     global timeout_timer
-    global daily_limit
     global copied_today_count
 
     show = ' '.join(args)
@@ -128,8 +131,8 @@ def please(bot: telegram.bot.Bot, update: telegram.update.Update, args):
 
         copied_today_count = 0
 
-    if copied_today_count >= daily_limit:
-        bot.send_message(chat_id, f"You had {daily_limit} new episodes today already. Go do some pushups instead ;-)", reply_markup=remove_keyboard)
+    if copied_today_count >= daily_limit():
+        bot.send_message(chat_id, f"You had {daily_limit()} new episodes today already. Go do some pushups instead ;-)", reply_markup=remove_keyboard)
         return
 
     timeout_timer = Timer(pending_request_timeout, lambda: cancel(bot))

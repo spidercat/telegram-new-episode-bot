@@ -147,7 +147,8 @@ def please(bot: telegram.bot.Bot, update: telegram.update.Update, args):
 
 def is_quorum():
     global pending_episode
-    return not db.get_quorum(pending_episode['aye'])
+    # return not db.get_quorum(pending_episode['aye'])
+    return len(pending_episode['aye']) > 1
 
 def copy_episode(bot: telegram.bot.Bot):
     global pending_episode

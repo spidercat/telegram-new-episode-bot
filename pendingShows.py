@@ -11,18 +11,22 @@ def __canonize(series_name):
 
 Episode = collections.namedtuple('Episode', 'show number filepath')
 
-PENDING_EPISODES_DIR = join(
-    secrets.PENDING_EPISODES_BASEDIR,
-    config.storage['Common']["EPISODES_DIR"]
-)
+def __get_episodes_dir(bucket_name):
+    bucket = config.storage.get(bucket_name)
+    if bucket:
+        return join(secrets.PENDING_EPISODES_BASEDIR, bucket['EPISODES_DIR'])
 
 TARGET_DIR = join(
     secrets.TARGET_BASEDIR,
     config.storage['Common']["TARGET_DIR"]
 )
 
-def __get_available_episodes():
-    stream = os.popen(f"find {PENDING_EPISODES_DIR}")
+def __get_available_episodes(bucket_name):
+    episodes_dir = __get_episodes_dir(bucket_name)
+    if not episodes_dir:
+        return []
+
+    stream = os.popen(f"find {episodes_dir}")
     found = [path.strip() for path in stream.readlines()]
     media_files = [filepath for filepath in found if isfile(filepath) and filepath.endswith(('.mp4', '.mkv'))]
 
@@ -51,8 +55,8 @@ def __get_folder(episode: Episode) -> str:
     season_folder = __get_verbose_number(episode.number)[0]
     return join(show_folder, season_folder)
 
-def get_shows():
-    return {e.show for e in __get_available_episodes()}
+def get_shows(bucket_name = 'Common'):
+    return {e.show for e in __get_available_episodes(bucket_name)}
 
 def get_next_episode_number(show):
     episode = __get_next_episode(show)

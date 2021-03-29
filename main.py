@@ -82,7 +82,13 @@ def shows(bot: telegram.bot.Bot, update: telegram.update.Update):
 
     t = Timer(1.0, send_disclaimer)
     t.start()
-    shows = "\n".join(get_shows())
+    common_shows = "\n".join(get_shows())
+    private_shows = "\n".join(get_shows(db.get_name(chat_id)))
+    if private_shows == '':
+        shows = common_shows
+    else:
+        shows = f"- Common shows -\n\n{common_shows}\n\n- Your private shows -\n\n{private_shows}"
+
     t.cancel()
     update.message.reply_text(shows)
 

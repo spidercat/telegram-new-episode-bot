@@ -20,10 +20,10 @@ def __get_episodes_dir(bucket_name):
     if bucket:
         return join(secrets.PENDING_EPISODES_BASEDIR, bucket['EPISODES_DIR'])
 
-TARGET_DIR = join(
-    secrets.TARGET_BASEDIR,
-    config.storage['Common']["TARGET_DIR"]
-)
+def __get_target_dir(bucket_name):
+    bucket = config.storage.get(bucket_name)
+    if bucket:
+        return join(secrets.TARGET_BASEDIR, bucket['TARGET_DIR'])
 
 def __get_available_episodes(bucket_name):
     episodes_dir = __get_episodes_dir(bucket_name)
@@ -35,10 +35,11 @@ def __get_available_episodes(bucket_name):
     media_files = [filepath for filepath in found if isfile(filepath) and filepath.endswith(('.mp4', '.mkv'))]
 
     episodes =[]
+    numbering_pattern = re.compile('[sS]\d\d([eE]\d\d)+')
     for filepath in media_files:
         filename = splitext(split(filepath)[1])[0]
-        series_name = re.split('[sS]\d\d([eE]\d\d)+', filename)[0]
-        episode = filename[len(series_name):].strip()
+        series_name = numbering_pattern.split(filename)[0]
+        episode = numbering_pattern.search(filename)[0].upper()
         episodes.append(Episode(__canonize(series_name), episode, filepath))
 
     return episodes
@@ -72,7 +73,7 @@ def prepare_next_episode(show: str, bucket_name = 'Common') -> str:
         return f"No episodes of '{show}' were found."
 
     episode_folder = __get_folder(episode)
-    target_dir = join(TARGET_DIR, episode_folder)
+    target_dir = join(__get_target_dir(bucket_name), episode_folder)
     if isdir(target_dir):
         print(f'{episode_folder} exists at target path')
     else:

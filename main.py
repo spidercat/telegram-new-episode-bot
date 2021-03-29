@@ -113,7 +113,10 @@ def please(bot: telegram.bot.Bot, update: telegram.update.Update, args):
     global copied_today_count
 
     show = ' '.join(args)
-    if show not in get_shows():
+    if show in get_shows(db.get_name(chat_id)):
+        copy_private_episode(bot, show, chat_id)
+        return
+    elif show not in get_shows():
         bot.send_message(chat_id, f"There is no such show '{show}'. Try /shows to see the list of available ones.", reply_markup=remove_keyboard)
         return
 
@@ -180,6 +183,28 @@ def copy_episode(bot: telegram.bot.Bot):
         bot.send_message(i, message)
 
     pending_episode = {}
+
+def copy_private_episode(bot: telegram.bot.Bot, show, chat_it):
+    # global last_copied_episode
+    # global copied_today_count
+
+    print(f"copy private episode for {db.get_name(chat_it)}")
+    episode_number = get_next_episode_number(show, db.get_name(chat_it))
+
+    print(f"{db.get_name(chat_it)} asked for {show}")
+    bot.send_message(chat_it, f"Start copying new episode of '{show}': {' '.join(episode_number)}")
+
+    error = prepare_next_episode(show, db.get_name(chat_it))
+
+    if not error:
+        # copied_today_count = copied_today_count + 1
+        # message = f"Copy #{copied_today_count} is complete"
+        # last_copied_episode = datetime.now()
+        message = f"Copy is complete"
+    else:
+        message = f"Copy failed with the following error: {error}"
+
+    bot.send_message(chat_it, message)
 
 def aye(bot: telegram.bot.Bot, update: telegram.update.Update):
     chat_id = update.message.chat.id

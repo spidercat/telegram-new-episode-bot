@@ -194,6 +194,10 @@ def copy_private_episode(bot: telegram.bot.Bot, show, chat_it):
     print(f"{db.get_name(chat_it)} asked for {show}")
     bot.send_message(chat_it, f"Start copying new episode of '{show}': {' '.join(episode_number)}")
 
+    time.sleep(2)
+    bot.send_message(chat_it, f"Sorry, it's not fully working yet. [:-(")
+    return
+
     error = prepare_next_episode(show, db.get_name(chat_it))
 
     if not error:

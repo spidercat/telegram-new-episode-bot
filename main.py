@@ -1,4 +1,4 @@
-import config
+import secrets
 from db import Db
 from pendingShows import get_shows, get_next_episode_number, prepare_next_episode
 
@@ -13,7 +13,7 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup, KeyboardButton,
 from collections import OrderedDict
 from threading import Timer
 
-updater = Updater(config.TOKEN)
+updater = Updater(secrets.TOKEN)
 dispatcher = updater.dispatcher
 db = Db()
 
@@ -137,7 +137,7 @@ def please(bot: telegram.bot.Bot, update: telegram.update.Update, args):
     pending_episode['show'] = show
     pending_episode['name'] = db.get_name(chat_id)
     pending_episode['date'] = update.message.date
-    pending_episode['aye'] = [str(chat_id)]
+    pending_episode['aye'] = [chat_id]
     print(f"new episode request: {pending_episode}")
 
     for i in db.get_quorum([chat_id]):
@@ -174,7 +174,6 @@ def copy_episode(bot: telegram.bot.Bot):
 
     pending_episode = {}
 
-
 def aye(bot: telegram.bot.Bot, update: telegram.update.Update):
     chat_id = update.message.chat.id
     if not db.is_family(chat_id):
@@ -187,17 +186,17 @@ def aye(bot: telegram.bot.Bot, update: telegram.update.Update):
         update.message.reply_text(f"Hold your horses. There are no pending requests.")
         return
 
-    if str(chat_id) in pending_episode['aye']:
+    if chat_id in pending_episode['aye']:
         update.message.reply_text(f"Darling, wait for the rest to respond.")
         return
 
     # notify
-    pending_episode['aye'].append(str(chat_id))
+    pending_episode['aye'].append(chat_id)
 
     for i in db.get_quorum([chat_id]):
         # TODO: make better message
         bot.send_message(i, f"{db.get_name(chat_id)} says: Aye, Aye Captain!!")
-    
+
     if is_quorum():
         bot.send_chat_action(chat_id=chat_id, action=telegram.ChatAction.TYPING)
         global timeout_timer
@@ -217,7 +216,7 @@ def nay(bot: telegram.bot.Bot, update: telegram.update.Update):
         update.message.reply_text(f"Why so negative ? There are no pending requests.")
         return
 
-    if str(chat_id) in pending_episode['aye']:
+    if chat_id in pending_episode['aye']:
         update.message.reply_text(f"Darling, you've said your piece already. No turning back on your word.")
         return
 

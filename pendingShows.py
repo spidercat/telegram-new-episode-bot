@@ -1,5 +1,6 @@
 import collections
 import config
+import secrets
 import os
 from os.path import isdir, isfile, join, split, splitext
 import re
@@ -10,8 +11,18 @@ def __canonize(series_name):
 
 Episode = collections.namedtuple('Episode', 'show number filepath')
 
+PENDING_EPISODES_DIR = join(
+    secrets.PENDING_EPISODES_BASEDIR,
+    config.storage['Common']["EPISODES_DIR"]
+)
+
+TARGET_DIR = join(
+    secrets.TARGET_BASEDIR,
+    config.storage['Common']["TARGET_DIR"]
+)
+
 def __get_available_episodes():
-    stream = os.popen(f"find {config.PENDING_EPISODES_DIR}")
+    stream = os.popen(f"find {PENDING_EPISODES_DIR}")
     found = [path.strip() for path in stream.readlines()]
     media_files = [filepath for filepath in found if isfile(filepath) and filepath.endswith(('.mp4', '.mkv'))]
 
@@ -51,9 +62,9 @@ def prepare_next_episode(show: str) -> str:
     episode = __get_next_episode(show)
     if not episode:
         return f"No episodes of '{show}' were found."
-    
+
     episode_folder = __get_folder(episode)
-    target_dir = join(config.TARGET_DIR, episode_folder)
+    target_dir = join(TARGET_DIR, episode_folder)
     if isdir(target_dir):
         print(f'{episode_folder} exists at target path')
     else:
@@ -66,5 +77,5 @@ def prepare_next_episode(show: str) -> str:
     filename = split(episode.filepath)[1]
     if not isfile(join(target_dir, filename)):
         return f"File {filename} doesn't exist in the target directory."
-    
+
     return None

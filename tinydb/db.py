@@ -1,6 +1,6 @@
 import sys
-sys.path.append("..")
-import config
+sys.path.insert(0, "..")
+import secrets
 
 from cryptography.fernet import Fernet
 from pathlib import Path
@@ -13,7 +13,7 @@ def encrypt(db_file_name, encrypted_db_file_name):
     exit(1)
 
   db_txt = Path(db_file_name).read_text()
-  fernet = Fernet(config.DB_ENCRYPTION_KEY)
+  fernet = Fernet(secrets.DB_ENCRYPTION_KEY)
   cypher_text = fernet.encrypt(db_txt.encode())
   Path(encrypted_db_file_name).write_bytes(cypher_text)
 
@@ -23,7 +23,7 @@ def decrypt(encrypted_db_file_name, output_db_file_name):
     exit(1)
 
   cypher_bytes = Path(encrypted_db_file_name).read_bytes()
-  fernet = Fernet(config.DB_ENCRYPTION_KEY)
+  fernet = Fernet(secrets.DB_ENCRYPTION_KEY)
   db_decrypted_bytes = fernet.decrypt(cypher_bytes)
   Path(output_db_file_name).write_text(db_decrypted_bytes.decode())
 

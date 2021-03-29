@@ -1,7 +1,8 @@
 from tinydb import TinyDB, Query, where
+import config
+import people
 
 class Db:
-    
     def __init__(self):
         self.groups = TinyDB('tinydb/groups-db.json')
         self.actions = TinyDB('tinydb/actions-db.json')
@@ -12,29 +13,39 @@ class Db:
         return str(id) in group[0]['members']
 
     def is_family(self, id):
-        return self.__is_member('Family', id)
+        name = people.CHAT_ID_TO_NAME.get(id)
+        return name and name in config.Family
 
     def is_guest(self, id):
-        return self.__is_member('Guests', id)
+        name = people.CHAT_ID_TO_NAME.get(id)
+        return name and name in config.Guests
 
     def is_kid(self, id):
-        return self.__is_member('Kids Quorum', id)
+        name = people.CHAT_ID_TO_NAME.get(id)
+        return name and name in config.Kids
 
     def get_quorum(self, ids=[]):
-        qourum = self.groups.search(where('name') == 'Kids Quorum')
-        assert len(qourum) == 1, f"Expected 1 Kids Quorum object. Found {len(qourum)}."
-        return [ident for ident in qourum[0]['members'] if ident not in [str(i) for i in ids]]
+        """ returns chat ids of qourum members """
+        qourum = self.groups.search(where('name') == 'Kids')
+        assert len(qourum) == 1, f"Expected 1 Kids object. Found {len(qourum)}."
+        return [self.get_id(name) for name in config.Kids if self.get_id(name) not in [i for i in ids]]
 
     def get_name(self, id):
-        user = self.groups.search(where('chat_id') == str(id))
-        assert len(user) == 1, f"No one with chat_id={id} is found."
-        return user[0]['name']
+        name = people.CHAT_ID_TO_NAME.get(id)
+        assert name, f"No one with chat_id={id} is found."
+        return name
+
+    def get_id(self, name):
+        for key, value in people.CHAT_ID_TO_NAME.items():
+         if name == value:
+             return key
 
     def whoami(self, id):
-        whoami_map = self.groups.search(where('name') == 'whoami')[0]['whoami']
-        assert whoami_map, "Failed retreiving whoami map."
         name = self.get_name(id)
-        return whoami_map.get(name, None) or f"{name}, you're just a child."
+        if name:
+            return config.Whoami.get(name, None) or f"{name}, you're just a child."
+        else:
+            return f"{id}, I don't know you."
 
     def __get_pending_episode(self):
         pending = self.actions.search(where('name') == 'Pending Episode')

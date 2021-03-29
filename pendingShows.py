@@ -7,7 +7,11 @@ import re
 import shutil
 
 def __canonize(series_name):
-    return series_name.replace('.', ' ').strip()
+    series_name = series_name.replace('.', ' ').strip()
+    if series_name.endswith('-'):
+        series_name = series_name[:-1]
+
+    return series_name.strip()
 
 Episode = collections.namedtuple('Episode', 'show number filepath')
 
@@ -33,14 +37,14 @@ def __get_available_episodes(bucket_name):
     episodes =[]
     for filepath in media_files:
         filename = splitext(split(filepath)[1])[0]
-        series_name = re.sub('S\d\d(E\d\d)+', '', filename)
+        series_name = re.split('[sS]\d\d([eE]\d\d)+', filename)[0]
         episode = filename[len(series_name):].strip()
         episodes.append(Episode(__canonize(series_name), episode, filepath))
 
     return episodes
 
-def __get_next_episode(show: str) -> Episode:
-    show_episodes = list(filter(lambda s: s.show == show, __get_available_episodes()))
+def __get_next_episode(show: str, bucket_name) -> Episode:
+    show_episodes = list(filter(lambda s: s.show == show, __get_available_episodes(bucket_name)))
     show_episodes.sort(key=lambda e: e.number)
     return next(iter(show_episodes), None)
 
@@ -58,12 +62,12 @@ def __get_folder(episode: Episode) -> str:
 def get_shows(bucket_name = 'Common'):
     return {e.show for e in __get_available_episodes(bucket_name)}
 
-def get_next_episode_number(show):
-    episode = __get_next_episode(show)
+def get_next_episode_number(show, bucket_name = 'Common'):
+    episode = __get_next_episode(show, bucket_name)
     return __get_verbose_number(episode.number)
 
-def prepare_next_episode(show: str) -> str:
-    episode = __get_next_episode(show)
+def prepare_next_episode(show: str, bucket_name = 'Common') -> str:
+    episode = __get_next_episode(show, bucket_name)
     if not episode:
         return f"No episodes of '{show}' were found."
 

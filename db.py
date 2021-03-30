@@ -26,9 +26,7 @@ class Db:
 
     def get_quorum(self, ids=[]):
         """ returns chat ids of qourum members """
-        qourum = self.groups.search(where('name') == 'Kids')
-        assert len(qourum) == 1, f"Expected 1 Kids object. Found {len(qourum)}."
-        return [self.get_id(name) for name in config.Kids if self.get_id(name) not in [i for i in ids]]
+        return [self.get_id(name) for name in config.Kids if self.get_id(name) not in ids]
 
     def get_name(self, id):
         name = people.CHAT_ID_TO_NAME.get(id)

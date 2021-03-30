@@ -35,7 +35,7 @@ def __get_available_episodes(bucket_name):
     media_files = [filepath for filepath in found if isfile(filepath) and filepath.endswith(('.mp4', '.mkv'))]
 
     episodes =[]
-    numbering_pattern = re.compile('[sS]\d\d([eE]\d\d)+')
+    numbering_pattern = re.compile('[sS]\d\d[eE]\d+')
     for filepath in media_files:
         filename = splitext(split(filepath)[1])[0]
         series_name = numbering_pattern.split(filename)[0]
